@@ -1,0 +1,172 @@
+{% extends "mail/layout.html" %}
+{% load static %}
+
+
+{% block script %}
+<link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css" />
+<script src="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emoji-mart@latest/dist/browser.js"></script>
+<script src="{% static 'mail/inbox.js' %}"></script>
+
+<!--react-->
+<script src="https://unpkg.com/react@17/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+
+        
+{% endblock %}
+
+{% block body %}
+    <h2>Signed in as {{ request.user.email }}</h2>
+    <img id="nav-logo" src="{% static 'mail/pictures/minimalMailLogo.png' %}">
+    <button class="btn btn-sm btn-outline-primary" id="inbox">Inbox</button>
+    <button class="btn btn-sm btn-outline-primary" id="compose">Compose</button>
+    <button class="btn btn-sm btn-outline-primary" id="sent">Sent</button>
+    <button class="btn btn-sm btn-outline-primary" id="archived">Archived</button>
+   
+    <div  id="contrast-button"></div>
+    <a class="btn btn-sm btn-outline-primary" href="{% url 'logout' %}">Log Out</a>
+    <hr>
+
+    <div id="emails-view">
+    </div>
+
+    <div id="email-view">
+    </div>
+
+    <div id="compose-view">
+        <h3>New Email</h3>
+        <form id="compose-form">
+            <div class="form-group">
+                From: <input disabled class="form-control" value="{{ request.user.email }}">
+            </div>
+            <div class="form-group">
+                To: <input id="compose-recipients" class="form-control">
+            </div>
+            <div class="form-group">
+                <input class="form-control" id="compose-subject" placeholder="Subject">
+            </div>
+            <div id="inline">
+              <button id="emoji-button" type="button">Add Emoji</button>
+              <div id="emoji-picker"></div>
+            </div>
+            <br>
+            <br>
+            <div id="compose-body"></div>
+            <input id="submit" type="submit" class="btn btn-primary" value="Send"/>
+        </form>
+       
+      
+    </div>
+    
+
+<!--High contrast mode-->
+<script type="text/babel">
+
+ 
+    function App(props) {
+    const [darkMode, setDarkMode] = React.useState(false);
+
+    function toggleContrast() {
+      setDarkMode(!darkMode);
+    }
+
+    React.useEffect(() => {
+      if (darkMode) {
+        document.body.style.backgroundColor = 'black';
+        document.body.style.color = 'rgb(230, 230, 230)';
+      } else {
+        document.body.style.backgroundColor = 'rgb(230, 230, 230)';
+        document.body.style.color = 'black';
+      }
+    }, [darkMode]);
+
+
+
+
+  return(
+    <button class="btn btn-sm btn-outline-primary" id="contrast" onClick={toggleContrast}>Change Contrast</button>
+  )
+  }
+
+  
+  ReactDOM.render(<App />, document.querySelector('#contrast-button'));
+
+
+  
+
+</script>
+
+
+
+
+    <script>
+      const {
+        ClassicEditor,
+         Essentials,
+        Bold,
+        Italic,
+        Font,
+        Paragraph
+      } = CKEDITOR;
+        ClassicEditor
+        .create(document.querySelector('#compose-body'),{
+          licenseKey: 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3Njg2MDc5OTksImp0aSI6IjFkYTAxZmVlLTA0YjQtNGYyMy05NThmLTFkNzRjZjk1YmVlYiIsInVzYWdlRW5kcG9pbnQiOiJodHRwczovL3Byb3h5LWV2ZW50LmNrZWRpdG9yLmNvbSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsiY2xvdWQiLCJkcnVwYWwiXSwiZmVhdHVyZXMiOlsiRFJVUCJdLCJ2YyI6ImQwMmU0YjFjIn0.E-Qlb7JVTZ_PzYThXt_5UM6FpPwwfk9HmbBllw6snUBlSVx_XbafOP0zcPH7J3leniVNW5N81iJH2c_r7zYCGg',
+        plugins: [ Essentials, Bold, Italic, Font, Paragraph ],
+        toolbar: {
+        items: [
+        'undo', 'redo',
+        '|',
+        'heading',
+        '|',
+        'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
+        '|',
+        'bold', 'italic', 'strikethrough', 'subscript', 'superscript', 'code',
+        '|',
+        'link', 'uploadImage', 'blockQuote', 'codeBlock',
+        '|',
+        'bulletedList', 'numberedList', 'todoList', 'outdent', 'indent'
+    ],
+    shouldNotGroupWhenFull: false
+}
+
+
+        })
+
+        .then(editor => {
+            editorInstance = editor;
+        })
+
+        
+        const picker = new EmojiMart.Picker({
+        onEmojiSelect: emoji => {
+        const emojiText = emoji.native;
+        const model = editorInstance.model;
+        const doc = model.document;
+        model.change(writer => {
+            const insertPosition = doc.selection.getFirstPosition();
+            writer.insertText(emojiText, insertPosition);
+        });
+        
+    }
+  });
+    document.getElementById('emoji-button').addEventListener('click', () => {
+     
+    const emojiPicker = document.getElementById('emoji-picker');
+    const currentDisplay = emojiPicker.style.display;
+    emojiPicker.style.display = currentDisplay === 'none' || currentDisplay === '' ? 'block' : 'none';
+    emojiPicker.innerHTML = ''; 
+    emojiPicker.appendChild(picker); 
+    return false;
+   
+});
+
+
+
+      
+    </script>
+{% endblock %}
+
+
+    
